@@ -1,0 +1,26 @@
+
+require 'msnmp'
+
+ver = '1'
+community = 'public'
+nonopts = []
+while arg = ARGV.shift
+  case arg
+  when /^-c/; community = ARGV.shift
+  when /^-v/; ver = ARGV.shift
+  when /^[^-]/; nonopts.push arg
+  end
+end
+
+snmp = SNMP.new nonopts.first
+snmp.version = ver
+snmp.community = community
+oid = nonopts[1]
+snmp.walk(oid) {|oid, tag, val|
+  #puts "#{oid} = #{val.inspect}"
+  case tag
+  when 6
+    val = BER.dec_oid(val).join('.')
+  end
+  p [oid, tag, val]
+}
