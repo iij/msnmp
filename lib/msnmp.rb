@@ -6,10 +6,58 @@ class String
       self[idx]
     end
   end
+
+  unless ''.respond_to? :slice!
+    def slice!(arg1, arg2 = 1)
+      return nil if arg2 < 0
+      if arg1.class == Fixnum
+        rval = self[arg1, arg2]
+        len = self.length
+        rpos = arg1 + arg2
+        rpos += len if arg1 < 0
+        rlen = len - rpos
+        region_l = self[0...arg1]
+        region_r = self[rpos, rlen]
+        region_r = '' if region_r == nil
+        self.replace(region_l + region_r)
+      elsif arg1.class == String
+        rval = arg1
+        self.gsub!(arg1, "")
+      else
+        return nil
+      end
+      rval
+    end
+  end
 end
 
 module BER
-  extend BER
+  class C64
+    def initialize s
+      @s = s
+      @a = [0, 0, 0, 0, 0, 0, 0, 0]
+      j = 7
+      (s.size-1).downto(0) {|i| @a[j] = s.getbyte(i); j -= 1}
+    end
+
+    def to_s
+      '0x' + @a.map {|b| sprintf "%02x", b}.join('')
+    end
+
+    def to_binary
+      @a.pack('C*')
+    end
+
+    def to_msgpack
+      "\xcf" + @a.pack('C*')
+    end
+
+    def to_i
+      n = 0
+      0.upto(7) {|i| n = n * 256 + @a[i]}
+      n
+    end
+  end
 
   def enc tag, val
     case tag
@@ -152,12 +200,18 @@ module BER
   def dec_cnt s
     n = 0
     while s.size > 0
-      #n = n << 8 | s.getbyte(0)
-      n = n * 256 + s.getbyte(0)
+      n = n << 8 | s.getbyte(0)
       s = s[1..-1]
     end
     return n
   end
+
+  def dec_cnt64 s
+    C64.new(s)
+  end
+
+  Object.const_defined?(:RUBY_VERSION) and
+    alias_method(:dec_cnt64, :dec_cnt)
 
   def tlv data
     tag = data.getbyte 0
@@ -218,7 +272,7 @@ module BER
       when 0x41, 0x42, 0x43 #Counter or Gauge or Tick
         val2 = dec_cnt val2
       when 0x46 #Counter64
-	val2 = dec_cnt val2
+	val2 = dec_cnt64 val2
       when 0x80
         next # skip
       end
@@ -234,6 +288,8 @@ module BER
     }
     return list
   end
+
+  extend BER
 end
 
 class SNMP
