@@ -535,6 +535,10 @@ class SNMP
     end
 
     vars = BER.dec_varbind varbind
+    if vars.empty?
+      @state = :SUCCESS
+      return
+    end
     for var in vars
       if (var[1] != 130) and var[0].index(@req_enoid) #130=endOfMibView
         @cb.call(*var)
