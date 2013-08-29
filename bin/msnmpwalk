@@ -1,14 +1,17 @@
-
-require 'msnmp'
+if Object.const_defined?(:RUBY_VERSION)
+  require 'socket'
+  require 'rubygems'
+  require 'msnmp'
+end
 
 ver = '1'
 community = 'public'
 nonopts = []
 while arg = ARGV.shift
   case arg
-  when /^-c/; community = ARGV.shift
-  when /^-v/; ver = ARGV.shift
-  when /^[^-]/; nonopts.push arg
+  when '-c'; community = ARGV.shift
+  when '-v'; ver = ARGV.shift
+  else nonopts.push arg
   end
 end
 
