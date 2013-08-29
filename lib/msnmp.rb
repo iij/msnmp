@@ -238,7 +238,7 @@ module BER
     if msg[1, 1] < "\x80"
       idx = msg.getbyte(6) + 7
       pdutype, pdu, msg = tlv msg[idx..-1]
-    elsif msg[1, 1] == "x81"
+    elsif msg[1, 1] == "\x81"
       idx = msg.getbyte(7) + 8
       pdutype, pdu, msg = tlv msg[idx..-1]
     else
