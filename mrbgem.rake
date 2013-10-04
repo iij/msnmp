@@ -5,4 +5,6 @@ MRuby::Gem::Specification.new('mruby-msnmp') do |spec|
   spec.add_dependency 'mruby-string-ext'
   spec.add_dependency 'mruby-io'
   spec.add_dependency 'mruby-socket'
+  
+  spec.rbfiles = Dir[File.expand_path('../lib/*.rb', __FILE__)]
 end
