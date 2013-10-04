@@ -1,12 +1,6 @@
 # coding: us-ascii
 
 class String
-  unless ''.respond_to? :getbyte
-    def getbyte idx
-      self[idx]
-    end
-  end
-
   unless ''.respond_to? :slice!
     def slice!(arg1, arg2 = 1)
       return nil if arg2 < 0
