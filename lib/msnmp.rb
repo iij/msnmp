@@ -443,12 +443,7 @@ class SNMP
     @community = "\x04\x06public"
     @numeric = false
     @state = :IDLE
-    @sock = nil
-  end
-
-  def connect
     @sock = UDPSocket.new
-    @sock.connect @host, @port
   end
 
   def close
@@ -550,9 +545,9 @@ class SNMP
       s = make_req @state, arg
       @retry_count = 0
       while true
-        @sock.send s, 0
+        @sock.send(s, 0, @host, @port)
         if (a = IO.select([@sock], nil, nil, @timeout))
-          msg = @sock.recv RECV_SIZE, 0
+          msg, _ = @sock.recvfrom(RECV_SIZE, 0)
           arg = recv_msg msg
           if arg
             @state = :SUCCESS if @state == :GET_REQ
