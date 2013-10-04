@@ -417,7 +417,7 @@ class SNMP
   RECV_SIZE = 2000
 
   attr_reader :sock
-  attr_accessor :state, :numeric
+  attr_accessor :state, :numeric, :timeout
 
   def self.add_oid sym, oid
     OIDS[sym] = oid
