@@ -1,12 +1,6 @@
 # coding: us-ascii
 
 class String
-  unless ''.respond_to? :getbyte
-    def getbyte idx
-      self[idx]
-    end
-  end
-
   unless ''.respond_to? :slice!
     def slice!(arg1, arg2 = 1)
       return nil if arg2 < 0
@@ -423,7 +417,7 @@ class SNMP
   RECV_SIZE = 2000
 
   attr_reader :sock
-  attr_accessor :state, :numeric
+  attr_accessor :state, :numeric, :timeout
 
   def self.add_oid sym, oid
     OIDS[sym] = oid
@@ -449,12 +443,7 @@ class SNMP
     @community = "\x04\x06public"
     @numeric = false
     @state = :IDLE
-    @sock = nil
-  end
-
-  def connect
     @sock = UDPSocket.new
-    @sock.connect @host, @port
   end
 
   def close
@@ -556,9 +545,9 @@ class SNMP
       s = make_req @state, arg
       @retry_count = 0
       while true
-        @sock.send s, 0
+        @sock.send(s, 0, @host, @port)
         if (a = IO.select([@sock], nil, nil, @timeout))
-          msg = @sock.recv RECV_SIZE, 0
+          msg, _ = @sock.recvfrom(RECV_SIZE, 0)
           arg = recv_msg msg
           if arg
             @state = :SUCCESS if @state == :GET_REQ
